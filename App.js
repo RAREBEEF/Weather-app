@@ -15,14 +15,15 @@ import { Ionicons } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const { width: innerWidth } = Dimensions.get("window");
-
 const API_KEY = "657ffa08a11bf0a94e0555cfc8706fb5";
 
 export default function App() {
   const daysRef = useRef(null);
+
   const [city, setCity] = useState("...");
   const [permission, setPermission] = useState(true);
   const [days, setWeathers] = useState(null);
+
   const dateDay = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
   const weatherIcons = {
     Clear: "sunny-outline",
@@ -83,7 +84,18 @@ export default function App() {
     daysRef.current.scrollTo({ x: i * innerWidth });
   }, []);
 
-  return (
+  return permission === false ? (
+    <View style={styles.pending}>
+      <Text style={styles.gpsAlert}>기기의 위치 정보가 필요합니다.</Text>
+      <Text style={styles.gpsAlert}>
+        휴대폰 설정에서 위치 정보 접근을 허용해주세요.
+      </Text>
+    </View>
+  ) : days === null ? (
+    <View style={styles.pending}>
+      <ActivityIndicator color="#E0E1DD" size="large" />
+    </View>
+  ) : (
     <View style={styles.container}>
       <View style={styles.city}>
         <Ionicons name="location-outline" size={44} color="#778DA9" />
@@ -96,94 +108,82 @@ export default function App() {
         showsHorizontalScrollIndicator={false}
         ref={daysRef}
       >
-        {days === null ? (
-          <ActivityIndicator
-            color="#E0E1DD"
-            size="large"
-            style={styles.loading}
-          />
-        ) : (
-          days.map((day, i) => (
-            <View style={styles.day} key={i}>
-              <Text style={styles.date}>
-                {`${new Date(day.dt * 1000).getMonth() < 9 ? "0" : ""}${
-                  new Date(day.dt * 1000).getMonth() + 1
-                } / ${
-                  new Date(day.dt * 1000).getDate() < 10 ? "0" : ""
-                }${new Date(day.dt * 1000).getDate()}`}
-              </Text>
-              <Text style={styles.dateDay}>
-                {dateDay[new Date(day.dt * 1000).getDay()]}
-              </Text>
-              {weatherIcons[day.weather[0].main] ? (
-                <Ionicons
-                  style={{ marginTop: 10 }}
-                  name={weatherIcons[day.weather[0].main]}
-                  size={104}
-                  color="#415A77"
-                />
-              ) : (
-                <MaterialCommunityIcons
-                  style={{ marginTop: 10 }}
-                  name={anotherWeatherIcons[day.weather[0].main]}
-                  size={104}
-                  color="#415A77"
-                />
-              )}
-
-              <View style={styles.temp}>
-                <Text style={styles.number}>{Math.round(day.temp.day)}</Text>
-                <Text style={styles.sign}>°C</Text>
-              </View>
-              <Text style={styles.desc}>{day.weather[0].description}</Text>
+        {days.map((day, i) => (
+          <View style={styles.day} key={i}>
+            <Text style={styles.date}>
+              {`${new Date(day.dt * 1000).getMonth() < 9 ? "0" : ""}${
+                new Date(day.dt * 1000).getMonth() + 1
+              } / ${
+                new Date(day.dt * 1000).getDate() < 10 ? "0" : ""
+              }${new Date(day.dt * 1000).getDate()}`}
+            </Text>
+            <Text style={styles.dateDay}>
+              {dateDay[new Date(day.dt * 1000).getDay()]}
+            </Text>
+            {weatherIcons[day.weather[0].main] ? (
+              <Ionicons
+                style={{ marginTop: 10 }}
+                name={weatherIcons[day.weather[0].main]}
+                size={104}
+                color="#415A77"
+              />
+            ) : (
+              <MaterialCommunityIcons
+                style={{ marginTop: 10 }}
+                name={anotherWeatherIcons[day.weather[0].main]}
+                size={104}
+                color="#415A77"
+              />
+            )}
+            <View style={styles.temp}>
+              <Text style={styles.number}>{Math.round(day.temp.day)}</Text>
+              <Text style={styles.sign}>°C</Text>
             </View>
-          ))
-        )}
+            <Text style={styles.desc}>{day.weather[0].description}</Text>
+          </View>
+        ))}
       </ScrollView>
       <ScrollView
         contentContainerStyle={styles.summaries}
         showsHorizontalScrollIndicator={false}
         horizontal
       >
-        {days !== null &&
-          days.map((day, i) => (
-            <TouchableOpacity
-              style={styles.summary}
-              key={i}
-              onPress={() => {
-                onWeekTouch(i);
-              }}
-            >
-              <Text style={styles.summaryDate}>
-                {`${new Date(day.dt * 1000).getMonth() < 9 ? "0" : ""}${
-                  new Date(day.dt * 1000).getMonth() + 1
-                } / ${
-                  new Date(day.dt * 1000).getDate() < 10 ? "0" : ""
-                }${new Date(day.dt * 1000).getDate()}`}
-              </Text>
-              <Text style={styles.summaryDateDay}>
-                {dateDay[new Date(day.dt * 1000).getDay()]}
-              </Text>
-              {weatherIcons[day.weather[0].main] ? (
-                <Ionicons
-                  style={{ marginTop: 10 }}
-                  name={weatherIcons[day.weather[0].main]}
-                  size={54}
-                  color="#778DA9"
-                />
-              ) : (
-                <MaterialCommunityIcons
-                  style={{ marginTop: 10 }}
-                  name={anotherWeatherIcons[day.weather[0].main]}
-                  size={54}
-                  color="#778DA9"
-                />
-              )}
-              <Text style={styles.summaryTemp}>
-                {Math.round(day.temp.day)}°C
-              </Text>
-            </TouchableOpacity>
-          ))}
+        {days.map((day, i) => (
+          <TouchableOpacity
+            style={styles.summary}
+            key={i}
+            onPress={() => {
+              onWeekTouch(i);
+            }}
+          >
+            <Text style={styles.summaryDate}>
+              {`${new Date(day.dt * 1000).getMonth() < 9 ? "0" : ""}${
+                new Date(day.dt * 1000).getMonth() + 1
+              } / ${
+                new Date(day.dt * 1000).getDate() < 10 ? "0" : ""
+              }${new Date(day.dt * 1000).getDate()}`}
+            </Text>
+            <Text style={styles.summaryDateDay}>
+              {dateDay[new Date(day.dt * 1000).getDay()]}
+            </Text>
+            {weatherIcons[day.weather[0].main] ? (
+              <Ionicons
+                style={{ marginTop: 10 }}
+                name={weatherIcons[day.weather[0].main]}
+                size={54}
+                color="#778DA9"
+              />
+            ) : (
+              <MaterialCommunityIcons
+                style={{ marginTop: 10 }}
+                name={anotherWeatherIcons[day.weather[0].main]}
+                size={54}
+                color="#778DA9"
+              />
+            )}
+            <Text style={styles.summaryTemp}>{Math.round(day.temp.day)}°C</Text>
+          </TouchableOpacity>
+        ))}
       </ScrollView>
       <StatusBar style="light" />
     </View>
@@ -210,8 +210,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     width: innerWidth - 100,
-    // backgroundColor: "#E0E1DD",
-    // borderRadius: 15,
+    backgroundColor: "#E0E1DD",
+    borderRadius: 15,
   },
   date: {
     fontSize: 30,
@@ -260,9 +260,16 @@ const styles = StyleSheet.create({
     color: "#778DA9",
     fontWeight: "700",
   },
-  loading: {
+  pending: {
+    flex: 1,
     alignItems: "center",
-    justifyContent: "flex-start",
-    width: innerWidth,
+    justifyContent: "center",
+    backgroundColor: "#0D1B2A",
+  },
+  gpsAlert: {
+    color: "#E0E1DD",
+    fontWeight: "700",
+    fontSize: 16,
+    textAlign: "center",
   },
 });
